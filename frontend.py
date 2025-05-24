@@ -4,14 +4,13 @@ import requests
 import pandas as pd
 from requests.exceptions import RequestException
 
-# ===================== CONFIG =====================
-BACKEND_URL = st.secrets.get("BACKEND_URL", "https://praticedemo-bodpogd8vsnpgrebbeczcc.streamlit.app/")
-# ==================================================
+BACKEND_URL = "http://localhost:8000"
 
+# Page config
 st.set_page_config(page_title="Goods Dashboard", layout="wide")
 st.title("📦 Available Goods Dashboard")
 
-# ===== Session State Defaults =====
+# Session state defaults
 if 'goods' not in st.session_state:
     st.session_state.goods = []
 if 'search' not in st.session_state:
@@ -21,8 +20,8 @@ if 'limit' not in st.session_state:
 if 'page' not in st.session_state:
     st.session_state.page = 1
 
-# ===== Fetch Goods =====
-def fetch_goods(show_debug=False):
+# Fetch goods from backend
+def fetch_goods():
     params = {
         'search': st.session_state.search or None,
         'limit': st.session_state.limit,
@@ -30,24 +29,14 @@ def fetch_goods(show_debug=False):
     }
     try:
         with st.spinner("Loading goods..."):
-            response = requests.get(f"{BACKEND_URL}/goods", params=params, timeout=5)
-            if show_debug:
-                st.write("Status code:", response.status_code)
-                st.write("Content-Type:", response.headers.get('content-type'))
-                st.write("Response body (first 200 chars):", response.text[:200])
-            response.raise_for_status()
-            st.session_state.goods = response.json()
+            resp = requests.get(f"{BACKEND_URL}/goods", params=params, timeout=5)
+            resp.raise_for_status()
+            st.session_state.goods = resp.json()
     except RequestException as e:
         st.error(f"Error fetching goods: {e}")
-        # Attempt to display response details if available
-        try:
-            st.write("Debug info:")
-            st.write("Response text:", response.text)
-        except Exception:
-            pass
         st.session_state.goods = []
 
-# ===== Update Status (Lock/Unlock) =====
+# Update status callback (lock/unlock)
 def update_status_callback(good_id, status):
     try:
         with st.spinner(f"Updating status for ID {good_id}..."):
@@ -62,54 +51,46 @@ def update_status_callback(good_id, status):
     except RequestException as e:
         st.error(f"Error updating status: {e}")
 
-# ===== Sidebar Controls =====
+# Controls: search, limit, navigation
 with st.sidebar:
     st.header("Controls")
     st.session_state.search = st.text_input("Search by name", st.session_state.search)
-    st.session_state.limit = st.number_input(
-        "Items per page", min_value=1, max_value=100, value=st.session_state.limit
-    )
-    nav_col1, nav_col2 = st.columns(2)
-    with nav_col1:
+    st.session_state.limit = st.number_input("Items per page", min_value=1, max_value=100, value=st.session_state.limit)
+    col1, col2 = st.columns(2)
+    with col1:
         if st.button("Previous") and st.session_state.page > 1:
             st.session_state.page -= 1
-    with nav_col2:
+    with col2:
         if st.button("Next"):
             st.session_state.page += 1
     if st.button("Refresh"):
         st.session_state.page = 1
-    # Debug toggle
-    show_debug = st.checkbox("Show Debug Info", value=False)
+    st.write(f"Page: {st.session_state.page}")
 
-# ===== Initial Load =====
-fetch_goods(show_debug=show_debug)
+# Initial load
+fetch_goods()
 
-# ===== Display Goods =====
+# Display goods table
 goods = st.session_state.goods
 if goods:
     df = pd.DataFrame(goods)[['id', 'name', 'status']]
     st.dataframe(df, use_container_width=True)
     for g in goods:
-        col1, col2 = st.columns([3, 1])
+        col1, col2 = st.columns([3,1])
         col1.write(f"**{g['id']}**: {g['name']}" )
-        btn_label = "Unlock" if g['status']=='locked' else "Lock"
-        new_status = 'unlocked' if g['status']=='locked' else 'locked'
-        col2.button(
-            btn_label,
-            key=f"btn-{g['id']}",
-            on_click=update_status_callback,
-            args=(g['id'], new_status)
-        )
+        if g['status'] == 'locked':
+            col2.button(
+                "Unlock",
+                key=f"unlock-{g['id']}",
+                on_click=update_status_callback,
+                args=(g['id'], 'unlocked')
+            )
+        else:
+            col2.button(
+                "Lock",
+                key=f"lock-{g['id']}",
+                on_click=update_status_callback,
+                args=(g['id'], 'locked')
+            )
 else:
     st.info("No goods to display.")
-
-# ===== Footer Style Hide =====
-st.markdown(
-    """
-    <style>
-        footer {visibility: hidden;} 
-        .css-1d391kg {display: none;}
-    </style>
-    """, unsafe_allow_html=True
-)
-
