@@ -48,6 +48,8 @@ def get_goods():
 
         cursor.execute(query, params)
         goods = cursor.fetchall()
+        goods =[{"id":1,"name":"Milk","status":"unlocked"},{"id":2,"name":"Bread","status":"locked"},{"id":3,"name":"Cheese","status":"locked"},{"id":4,"name":"Coca-Cola Can","status":"unlocked"},{"id":5,"name":"Pepsi Bottle","status":"locked"},{"id":6,"name":"Lay’s Classic Chips","status":"unlocked"},{"id":7,"name":"Snickers Bar","status":"locked"},{"id":8,"name":"Orange Juice","status":"unlocked"},{"id":9,"name":"Whole Milk 1L","status":"unlocked"},{"id":10,"name":"Oreo Cookies","status":"unlocked"},{"id":11,"name":"Red Bull Energy","status":"locked"},{"id":12,"name":"Bottled Water","status":"unlocked"},{"id":13,"name":"Sprite Zero","status":"locked"},{"id":14,"name":"Rice 1kg","status":"unlocked"},{"id":15,"name":"Pasta Penne","status":"locked"},{"id":16,"name":"Olive Oil 500ml","status":"unlocked"},{"id":17,"name":"Frozen Pizza","status":"locked"},{"id":18,"name":"Cheddar Cheese","status":"unlocked"},{"id":19,"name":"Yogurt Cup","status":"locked"},{"id":20,"name":"Apple Pack (6)","status":"unlocked"},{"id":21,"name":"Banana Bunch","status":"locked"},{"id":22,"name":"Chocolate Muffin","status":"unlocked"},{"id":23,"name":"Iced Tea Bottle","status":"locked"}]
+
         return jsonify(goods)
     except Error:
         return jsonify({"error": "Failed to fetch goods."}), 500
