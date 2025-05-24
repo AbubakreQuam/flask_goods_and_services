@@ -8,8 +8,8 @@ import streamlit as st
 app = Flask(__name__)
 CORS(app)  # Allow all origins for simplicity
 
-connection_database_key = st.secret['connection_database_secret"]
-os.environment('connection_
+connection_database_key = st.secrets['connection_database_secret"]
+os.environ['connection_database_secret'] = connection_database_key
 
 # Database connection helper
 def get_db_connection():
