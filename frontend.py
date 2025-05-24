@@ -4,7 +4,7 @@ import requests
 import pandas as pd
 from requests.exceptions import RequestException
 
-BACKEND_URL = "https://flaskodsandservices-5infmkoqnjcpvdzcongl9z.streamlit.app/"
+BACKEND_URL = "https://flaskgoodsandservices-5infmkoqnjcpvdzcongl9z.streamlit.app/"
 
 # Page config
 st.set_page_config(page_title="Goods Dashboard", layout="wide")
