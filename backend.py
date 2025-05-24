@@ -84,5 +84,8 @@ def lock_good():
         cursor.close()
         db.close()
 
-if __name__ == "__main__":
-    app.run()
+
+if __name__ == '__main__':
+    debug_mode = os.environ.get("FLASK_DEBUG", "0") == "1"
+    app.run(debug=debug_mode, use_reloader=False)
+
